@@ -1,17 +1,23 @@
 """Guards for the Vercel deployment contract, since there is no way to run Vercel in CI."""
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def test_vercel_entrypoint_exposes_handler():
+def test_vercel_entrypoint_defines_a_literal_handler_class():
+    # Vercel only registers api/index.py as a function if the source literally defines `class handler`.
+    # An aliased import deploys "successfully" with no function, so check the text, not just the object.
+    source = (ROOT / "api" / "index.py").read_text()
+    assert re.search(r"^class handler\(ApiHandler\)\s*:", source, re.MULTILINE)
+
     spec = importlib.util.spec_from_file_location("vercel_entry", ROOT / "api" / "index.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     from rampops.web import ApiHandler
-    assert mod.handler is ApiHandler
+    assert issubclass(mod.handler, ApiHandler)
 
 
 def test_vercel_json_routes_api_and_locks_down_headers():
