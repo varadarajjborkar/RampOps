@@ -14,9 +14,9 @@ import json
 import re
 import sys
 import traceback
+from collections.abc import Callable
 from datetime import date, timedelta
 from http.server import BaseHTTPRequestHandler
-from typing import Callable
 from urllib.parse import parse_qsl, urlsplit
 
 from . import __version__, pcn, report, scenario

@@ -1,5 +1,7 @@
 from datetime import date, timedelta
+
 import pytest
+
 from rampops import pcn, scenario
 from rampops.__main__ import main
 from rampops.models import ValidationError

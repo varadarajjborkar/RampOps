@@ -6,7 +6,7 @@ from . import scenario
 
 def render() -> str:
     s, r, c = scenario.run_sample_planning(), scenario.run_ramp(), scenario.run_pcn()
-    orders, bookings, products = s["orders"], s["bookings"], s["products"]
+    orders, bookings = s["orders"], s["bookings"]
     late = [o for o in orders if not bookings[o.order_id].on_time]
     out = ["# RampOps demo report (synthetic data)\n"]
     out.append("## 1. Sample builds (ESFC -> wafer starts -> slots)\n")

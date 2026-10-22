@@ -7,3 +7,12 @@ requires-python = ">=3.10"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# The codebase favours compact one-line helpers and long table rows; correctness rules stay on.
+ignore = ["E501", "E702"]

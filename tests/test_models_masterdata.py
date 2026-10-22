@@ -1,4 +1,5 @@
 import pytest
+
 from rampops.masterdata import MasterDataRegistry
 from rampops.models import BomItem, Phase, Product, ValidationError
 

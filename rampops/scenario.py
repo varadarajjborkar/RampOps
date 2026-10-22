@@ -63,7 +63,7 @@ def run_sample_planning(fe_capacity: int = 25, be_capacity: int = 40000,
     products = make_products()
     reg = MasterDataRegistry()
     for p in products.values():
-        rec = reg.create(p, package="TO-247" if p.pid.startswith("PX") else "QFN-24")
+        reg.create(p, package="TO-247" if p.pid.startswith("PX") else "QFN-24")
     reg.release("PX650", Phase.ENGINEERING_SAMPLES)
     reg.release("PX1200", Phase.ENGINEERING_SAMPLES)
     # GD30's master data is incomplete (no approved BOM yet): the release must be refused,
