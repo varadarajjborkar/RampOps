@@ -1,5 +1,6 @@
 """The static dashboard must satisfy the CSP in vercel.json and reference only files that exist."""
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 PUBLIC = Path(__file__).resolve().parent.parent / "public"
@@ -15,11 +16,35 @@ def test_every_local_reference_exists():
         assert (PUBLIC / ref.lstrip("/")).is_file(), ref
 
 
+class _Inline(HTMLParser):
+    """Collects anything the CSP would block: inline script bodies, <style> blocks, style attributes."""
+
+    def __init__(self):
+        super().__init__()
+        self.problems = []
+        self._script_without_src = False
+
+    def handle_starttag(self, tag, attrs):
+        names = dict(attrs)
+        if "style" in names:
+            self.problems.append(f"style attribute on <{tag}>")
+        if tag == "style":
+            self.problems.append("<style> block")
+        self._script_without_src = tag == "script" and "src" not in names
+
+    def handle_endtag(self, tag):
+        self._script_without_src = False
+
+    def handle_data(self, data):
+        if self._script_without_src and data.strip():
+            self.problems.append("inline script body")
+
+
 def test_no_inline_script_or_style_in_html():
-    # The CSP forbids both, so either would silently do nothing in production.
-    assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>\s*\S", HTML)
-    assert "<style" not in HTML
-    assert not re.search(r'\sstyle="', HTML)
+    # The CSP forbids all of these, so any of them would silently do nothing in production.
+    parser = _Inline()
+    parser.feed(HTML)
+    assert parser.problems == []
 
 
 def test_no_inline_style_or_third_party_urls_in_scripts_and_css():
