@@ -26,8 +26,11 @@ jobs:
           python-version: "3.12"
       - run: pip install ruff
       - run: ruff check .
-      - name: JavaScript syntax
-        run: find public -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: JavaScript syntax (parsed as ES modules)
+        run: |
+          for f in $(find public -name '*.js'); do
+            node --input-type=module --check < "$f" || { echo "syntax error in $f"; exit 1; }
+          done
       - name: vercel.json is valid JSON
         run: python -c "import json; json.load(open('vercel.json'))"
 
