@@ -1,0 +1,8 @@
+[project]
+name = "rampops"
+version = "0.1.0"
+description = "NPI sample planning, ramp-up and PCN change-control toolkit (synthetic data)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
