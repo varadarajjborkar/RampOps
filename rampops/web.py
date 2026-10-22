@@ -283,15 +283,20 @@ def dispatch(target: str, method: str = "GET") -> tuple[int, dict, bytes]:
         return _json(500, {"error": "internal error"}, CACHE_NONE, method)
 
 
+def respond(h: BaseHTTPRequestHandler) -> None:
+    """Answer the request on `h` from the API."""
+    status, headers, body = dispatch(h.path, h.command)
+    h.send_response(status)
+    for k, v in headers.items():
+        h.send_header(k, v)
+    h.end_headers()
+    h.wfile.write(body)
+
+
 class ApiHandler(BaseHTTPRequestHandler):
     """http.server adapter; Vercel's Python runtime looks for a class named `handler`."""
 
     def _serve(self) -> None:
-        status, headers, body = dispatch(self.path, self.command)
-        self.send_response(status)
-        for k, v in headers.items():
-            self.send_header(k, v)
-        self.end_headers()
-        self.wfile.write(body)
+        respond(self)
 
     do_GET = do_HEAD = do_POST = do_PUT = do_PATCH = do_DELETE = do_OPTIONS = _serve
