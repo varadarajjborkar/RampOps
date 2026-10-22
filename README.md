@@ -7,6 +7,8 @@
 
 **Plan sample builds, ramp capacity to demand, and notify customers of product changes. In one small, fast, dependency-free toolkit.**
 
+**[Live demo: rampops.vercel.app](https://rampops.vercel.app/)**
+
 [![ci](https://github.com/varadarajjborkar/RampOps/actions/workflows/ci.yml/badge.svg)](https://github.com/varadarajjborkar/RampOps/actions/workflows/ci.yml)
 [![codeql](https://github.com/varadarajjborkar/RampOps/actions/workflows/codeql.yml/badge.svg)](https://github.com/varadarajjborkar/RampOps/actions/workflows/codeql.yml)
 ![python](https://img.shields.io/badge/python-3.10%2B-3776ab)
