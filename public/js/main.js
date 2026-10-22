@@ -13,7 +13,9 @@ const TITLES = { overview: "Overview", builds: "Sample builds", materials: "Mate
 const main = document.getElementById("view");
 
 function render() {
-  const name = location.hash.slice(1) in VIEWS ? location.hash.slice(1) : "overview";
+  // Own-property check: `in` is also true for inherited keys such as "constructor" and "__proto__".
+  const wanted = location.hash.slice(1);
+  const name = Object.hasOwn(VIEWS, wanted) ? wanted : "overview";
   document.querySelectorAll("#nav a").forEach((a) => {
     if (a.dataset.view === name) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
