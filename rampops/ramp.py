@@ -49,7 +49,7 @@ def simulate(demand: list[int], capacity: list[int]) -> RampResult:
     if len(demand) != len(capacity):
         raise ValidationError("demand and capacity must cover the same weeks")
     rows, backlog = [], 0
-    for w, (d, c) in enumerate(zip(demand, capacity)):
+    for w, (d, c) in enumerate(zip(demand, capacity, strict=True)):
         out = min(c, d + backlog)
         backlog = d + backlog - out
         rows.append(RampRow(w, d, c, out, backlog))

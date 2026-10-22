@@ -1,5 +1,7 @@
 import random
+
 import pytest
+
 from rampops import capacity, forecast
 from rampops.models import BomItem, Product, ValidationError
 

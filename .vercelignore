@@ -1,0 +1,7 @@
+tests/
+docs/
+scripts/
+.github/
+.venv/
+SECURITY.md
+*.zip
