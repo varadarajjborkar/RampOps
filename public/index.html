@@ -1,1 +1,54 @@
-<!doctype html><title>RampOps</title>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RampOps</title>
+  <meta name="description" content="Plan engineering sample builds, ramp-up and product change notifications. Interactive dashboard on synthetic data.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/boot.js"></script>
+  <link rel="modulepreload" href="/js/main.js">
+  <link rel="modulepreload" href="/js/api.js">
+  <link rel="modulepreload" href="/js/charts.js">
+  <link rel="modulepreload" href="/js/controls.js">
+  <link rel="modulepreload" href="/js/dom.js">
+  <link rel="modulepreload" href="/js/state.js">
+  <link rel="modulepreload" href="/js/views/overview.js">
+</head>
+<body>
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="top">
+    <div class="wrap top-row">
+      <a class="brand" href="#overview" aria-label="RampOps home">
+        <img src="/logo-mark.svg" alt="" width="32" height="32">
+        <span>RampOps</span>
+      </a>
+      <span class="badge" title="Every product, customer and number in this app is invented">Synthetic data</span>
+      <span class="spacer"></span>
+      <button id="theme" class="btn ghost" type="button" aria-label="Switch colour theme">Theme</button>
+      <a class="btn ghost" href="https://github.com/varadarajjborkar/RampOps" rel="noopener">GitHub</a>
+    </div>
+    <nav class="wrap tabs" aria-label="Sections" id="nav">
+      <a href="#overview" data-view="overview">Overview</a>
+      <a href="#builds" data-view="builds">Sample builds</a>
+      <a href="#materials" data-view="materials">Materials</a>
+      <a href="#ramp" data-view="ramp">Ramp-up</a>
+      <a href="#change" data-view="change">Change control</a>
+    </nav>
+  </header>
+
+  <main id="view" class="wrap" tabindex="-1" aria-live="polite">
+    <p class="loading">Loading the plan…</p>
+    <noscript><p class="callout">This dashboard needs JavaScript. The same results are available as plain text at <a href="/api/report">/api/report</a>.</p></noscript>
+  </main>
+
+  <footer class="wrap foot">
+    <p>All data is synthetic: products, customers, lead times, yields and policy values are invented, configurable defaults, not any company's real process.</p>
+    <p><a href="/api/report">Markdown report</a> · <a href="/api/health">Health</a> · <span id="version"></span></p>
+  </footer>
+  <div id="tip" class="tip" role="status" hidden></div>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
