@@ -1,0 +1,2 @@
+# RampOps has no runtime dependencies (standard library only).
+# This file exists so the Vercel Python install step has an explicit, empty answer.
