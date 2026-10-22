@@ -57,7 +57,9 @@ def make_inventory() -> materials.Inventory:
                  "bond wire (m)": [(18, 8000)]})
 
 
-def run_sample_planning() -> dict:
+def run_sample_planning(fe_capacity: int = 25, be_capacity: int = 40000,
+                        maintenance_weeks: tuple[int, ...] = (10, 11), max_pull_in: int = 3) -> dict:
+    """Plan the synthetic sample builds. The arguments are what-if levers; the defaults are the demo."""
     products = make_products()
     reg = MasterDataRegistry()
     for p in products.values():
@@ -73,7 +75,8 @@ def run_sample_planning() -> dict:
     reg.release("GD30", Phase.ENGINEERING_SAMPLES)
     reqs = make_requests()
     orders = forecast.build_orders(reqs, products)
-    book = capacity.SlotBook(fe_capacity=25, be_capacity=40000, horizon=80, fe_overrides={w: 0 for w in (10, 11)})
+    book = capacity.SlotBook(fe_capacity=fe_capacity, be_capacity=be_capacity, horizon=80,
+                             fe_overrides={w: 0 for w in maintenance_weeks}, max_pull_in=max_pull_in)
     bookings = capacity.book_all(orders, products, book)
     shortages = materials.check_readiness(orders, bookings, products, make_inventory())
     return {"products": products, "registry": reg, "requests": reqs, "orders": orders, "bookings": bookings,
@@ -86,13 +89,15 @@ def demand_profile(weeks: int = 26) -> list[int]:
     return [int(2000 + 38000 / (1 + math.exp(-(w - 12) / 3))) for w in range(weeks)]
 
 
-def run_ramp() -> dict:
-    demand = demand_profile()
-    start, ceiling = 5000, 45000
+def run_ramp(start: int = 5000, ceiling: int = 45000, slow_rate: int = 1500, weeks: int = 26,
+             yield_history: tuple[float, ...] = (0.88, 0.91, 0.93, 0.92), target_yield: float = 0.92,
+             material_cover_weeks: float = 3.5, min_cover_weeks: float = 4.0, open_issues: int = 0) -> dict:
+    """Ramp the synthetic demand curve. `rate`/`fit` are None when even an instant jump to the ceiling falls short."""
+    demand = demand_profile(weeks)
     rate = ramp.required_ramp_rate(demand, start, ceiling)
-    slow = ramp.simulate(demand, ramp.capacity_curve(len(demand), start, 1500, ceiling))
-    fit = ramp.simulate(demand, ramp.capacity_curve(len(demand), start, rate, ceiling))
-    gate = ramp.safe_launch_gate([0.88, 0.91, 0.93, 0.92], 0.92, 3.5, 4.0, 0)
+    slow = ramp.simulate(demand, ramp.capacity_curve(len(demand), start, slow_rate, ceiling))
+    fit = None if rate is None else ramp.simulate(demand, ramp.capacity_curve(len(demand), start, rate, ceiling))
+    gate = ramp.safe_launch_gate(list(yield_history), target_yield, material_cover_weeks, min_cover_weeks, open_issues)
     return {"demand": demand, "rate": rate, "slow": slow, "fit": fit, "gate": gate}
 
 
