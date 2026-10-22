@@ -1,14 +1,80 @@
-name: tests
-on: [push, pull_request]
+name: ci
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  lint:
+    name: lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix: { python-version: ["3.10", "3.12"] }
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "${{ matrix.python-version }}" }
-      - run: pip install pytest
-      - run: pytest -q
-      - run: python -m rampops demo --out report.md
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+      - name: JavaScript syntax
+        run: find public -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: vercel.json is valid JSON
+        run: python -c "import json; json.load(open('vercel.json'))"
+
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install pytest pytest-cov
+      - run: pytest -q --cov=rampops --cov-report=term-missing
+      - name: Demo report renders
+        run: python -m rampops demo --out report.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.python-version == '3.12'
+        with:
+          name: demo-report
+          path: report.md
+
+  smoke:
+    name: smoke (dev server)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Start server
+        run: |
+          python -m rampops serve --port 8000 &
+          for i in $(seq 1 20); do curl -fs http://127.0.0.1:8000/api/health && break; sleep 0.5; done
+      - run: python scripts/smoke.py http://127.0.0.1:8000
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [lint, test, smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All required jobs passed
+        run: |
+          echo '${{ toJSON(needs) }}' | python -c "import json,sys; r=json.load(sys.stdin); bad=[k for k,v in r.items() if v['result']!='success']; print('failed:', bad) if bad else print('ok'); sys.exit(1 if bad else 0)"
